@@ -1,22 +1,18 @@
 import 'leaflet/dist/leaflet.css';
-import MapComponent from "./assets/MapComponent.tsx";
+import MapComponent from './components/MapComponent.tsx';
+import Detail from './components/Detail.tsx';
 
 function App() {
-
   return (
       // <>
       //     <MapComponent/>
       // </>
-      <div className={'container-fluid'}>
-          <div className={'row'}>
-              <div className={'col-9 p-0'}>
-                  <MapComponent/>
-              </div>
-              <div className={'col-3'}>
-                  Details:
-              </div>
-          </div>
-      </div>
+
+        <div className={''}>
+            <MapComponent/>
+            <Detail/>
+        </div>
+
   )
 }
 

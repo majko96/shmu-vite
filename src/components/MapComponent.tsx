@@ -1,9 +1,11 @@
 import 'leaflet/dist/leaflet.css';
-import {MapContainer, Marker, Popup, TileLayer} from 'react-leaflet';
+import {MapContainer, Marker, Popup, TileLayer, LayerGroup} from 'react-leaflet';
 import L, {LatLng} from 'leaflet';
 import axios, {AxiosResponse} from 'axios';
 import {useEffect, useState} from 'react';
 import { format } from 'date-fns';
+import { useRecoilState } from 'recoil';
+import { station } from '../atoms';
 
 // Red and green icon URLs
 const redIconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png';
@@ -52,6 +54,16 @@ interface Properties {
 function MapComponent() {
     const position = new LatLng(48.6811522, 19.7028646); // Slovakia.
     const [stations, setStations] = useState<Feature[] | null>(null);
+    const [stationValue, setStationValue] = useRecoilState(station);
+
+    const getStationDetail = (id: number, name :string) => {
+        setStationValue((prevState: any) => ({
+        ...prevState,
+        id: id,
+        name: name,
+        }));
+    };
+    
 
     useEffect(() => {
         const fetchData = async () => {
@@ -67,13 +79,9 @@ function MapComponent() {
     }, []);
 
     const unixTimestampConverter = (timestamp: number) => {
-
-        // Convert Unix timestamp to Date
         const date = new Date(timestamp * 1000);
-
-        // Format the date and time
-        const formattedDateTime = format(date, "MM.dd.yyyy HH:mm");
-
+        const formattedDateTime = format(date, "dd.MM.yyyy HH:mm");
+        
         return (
             <p>Date: {formattedDateTime}</p>
         );
@@ -92,10 +100,21 @@ function MapComponent() {
                 zoom={8}
                 scrollWheelZoom={true}
             >
-                <TileLayer
+                {/* <TileLayer
                     attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                /> */}
+                <TileLayer
+                    attribution="Google Maps"
+                    url="https://www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}"
                 />
+                {/* <LayerGroup>
+                    <TileLayer
+                        attribution="Google Maps Satellite"
+                        url="https://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}"
+                    />
+                    <TileLayer url="https://www.google.cn/maps/vt?lyrs=y@189&gl=cn&x={x}&y={y}&z={z}" />
+                </LayerGroup> */}
                 {stations.map((feature, index) => (
                     <Marker
                         key={index}
@@ -110,6 +129,7 @@ function MapComponent() {
                                 {unixTimestampConverter(feature.properties.prop_dt)}
                                 <p>Value: {feature.properties.prop_value} nSv/h</p>
                                 <small>ID: {feature.id}</small>
+                                <button onClick={() => {getStationDetail(feature.id, feature.properties.prop_name)}}>Detail</button>
                             </div>
                         </Popup>
                     </Marker>
