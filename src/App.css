@@ -3,13 +3,25 @@
 }
 
 .loader {
-    border: 4px solid #f3f3f3; /* Light grey */
-    border-top: 4px solid #3498db; /* Blue */
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 2s linear infinite;
-    margin: 20px auto;
+    animation:spin 1s linear infinite;
+    border:8px solid #f3f3f3;
+    border-radius:50%;
+    border-top-color:#333;
+    height:60px;
+    left:50%;
+    margin-left:-25px;
+    margin-top:-25px;
+    position:absolute;
+    top:50%;
+    width:60px;
+    z-index:101;
+}
+
+.e-message {
+    left:45%;
+    position:absolute;
+    top:50%;
+    width:300px;
 }
 
 @keyframes spin {
@@ -22,7 +34,7 @@
     top: 40px;
     right: 40px;
     height: 600px;
-    z-index: 30000;
+    z-index: 999;
     overflow: hidden;
     border-radius: 10px;
     padding: 30px;
@@ -31,4 +43,14 @@
 .data-box-table {
     overflow: auto;
     height: 100%;
+}
+
+.close-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.leaflet-bar a, .leaflet-bar a:hover {
+    text-decoration: none !important;
 }

@@ -1,31 +1,11 @@
 import 'leaflet/dist/leaflet.css';
-import {MapContainer, Marker, Popup, TileLayer, LayerGroup} from 'react-leaflet';
-import L, {LatLng} from 'leaflet';
+import {CircleMarker, MapContainer, Popup, TileLayer} from 'react-leaflet';
+import {LatLng} from 'leaflet';
 import axios, {AxiosResponse} from 'axios';
 import {useEffect, useState} from 'react';
 import { format } from 'date-fns';
 import { useRecoilState } from 'recoil';
 import { station } from '../atoms';
-
-// Red and green icon URLs
-const redIconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png';
-const greenIconUrl = 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png';
-
-const redIcon = new L.Icon({
-    iconUrl: redIconUrl,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
-});
-
-const greenIcon = new L.Icon({
-    iconUrl: greenIconUrl,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41],
-    popupAnchor: [1, -34],
-    shadowSize: [41, 41],
-});
 
 interface RadiationData {
     type: string;
@@ -54,7 +34,8 @@ interface Properties {
 function MapComponent() {
     const position = new LatLng(48.6811522, 19.7028646); // Slovakia.
     const [stations, setStations] = useState<Feature[] | null>(null);
-    const [stationValue, setStationValue] = useRecoilState(station);
+    const [_stationValue, setStationValue] = useRecoilState(station);
+    const [hasError, setHasError] = useState(false);
 
     const getStationDetail = (id: number, name :string) => {
         setStationValue((prevState: any) => ({
@@ -73,6 +54,7 @@ function MapComponent() {
                 setStations(response.data.features);
             } catch (error) {
                 console.log('something went wrong...')
+                setHasError(true);
             }
         };
         fetchData().then();
@@ -86,6 +68,12 @@ function MapComponent() {
             <p>Date: {formattedDateTime}</p>
         );
     };
+
+    if (hasError) {
+        return (
+            <div className={'e-message'}>Sorry, something went wrong...</div>
+        )
+    }
 
     if (stations === null) {
         return (
@@ -116,23 +104,63 @@ function MapComponent() {
                     <TileLayer url="https://www.google.cn/maps/vt?lyrs=y@189&gl=cn&x={x}&y={y}&z={z}" />
                 </LayerGroup> */}
                 {stations.map((feature, index) => (
-                    <Marker
+                    <CircleMarker
                         key={index}
-                        position={[feature.geometry.coordinates[1], feature.geometry.coordinates[0]]}
-                        icon={feature.properties.prop_alarm ? redIcon : greenIcon}
+                        center={[feature.geometry.coordinates[1], feature.geometry.coordinates[0]]}
+                        fillColor={feature.properties.prop_alarm ? 'red' : 'green'}
+                        color={'#000'}
+                        fillOpacity={100}
+                        weight={1}
                     >
                         <Popup>
                             <div>
-                                <h5>Radiation Data</h5>
+                                <h5>Detail</h5>
+                                <hr/>
                                 <p>Name: {feature.properties.prop_name}</p>
                                 <p>Alarm: {feature.properties.prop_alarm.toString()}</p>
                                 {unixTimestampConverter(feature.properties.prop_dt)}
                                 <p>Value: {feature.properties.prop_value} nSv/h</p>
-                                <small>ID: {feature.id}</small>
-                                <button onClick={() => {getStationDetail(feature.id, feature.properties.prop_name)}}>Detail</button>
+                                <hr/>
+                                <div className={'d-flex justify-content-between align-items-center'}>
+                                    <small>ID: {feature.id}</small>
+                                    <button onClick={() => {
+                                        getStationDetail(feature.id, feature.properties.prop_name)
+                                    }}
+                                            className={'btn btn-secondary'}
+                                    >
+                                        History
+                                    </button>
+                                </div>
                             </div>
                         </Popup>
-                    </Marker>
+                    </CircleMarker>
+                    // <Marker
+                    //     key={index}
+                    //     position={[feature.geometry.coordinates[1], feature.geometry.coordinates[0]]}
+                    //     icon={feature.properties.prop_alarm ? redIcon : greenIcon}
+                    // >
+                    //     <Popup>
+                    //         <div>
+                    //             <h5>Detail</h5>
+                    //             <hr/>
+                    //             <p>Name: {feature.properties.prop_name}</p>
+                    //             <p>Alarm: {feature.properties.prop_alarm.toString()}</p>
+                    //             {unixTimestampConverter(feature.properties.prop_dt)}
+                    //             <p>Value: {feature.properties.prop_value} nSv/h</p>
+                    //             <hr/>
+                    //             <div className={'d-flex justify-content-between align-items-center'}>
+                    //                 <small>ID: {feature.id}</small>
+                    //                 <button onClick={() => {
+                    //                     getStationDetail(feature.id, feature.properties.prop_name)
+                    //                 }}
+                    //                         className={'btn btn-secondary'}
+                    //                 >
+                    //                     History
+                    //                 </button>
+                    //             </div>
+                    //         </div>
+                    //     </Popup>
+                    // </Marker>
                 ))}
             </MapContainer>
         </>
