@@ -54,3 +54,7 @@
 .leaflet-bar a, .leaflet-bar a:hover {
     text-decoration: none !important;
 }
+
+.btn:focus, .btn.focus {
+    box-shadow: none !important;
+}

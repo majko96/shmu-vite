@@ -5,7 +5,6 @@ import axios from 'axios';
 import {useEffect, useState} from 'react';
 import {format} from 'date-fns';
 import Modal from 'react-modal';
-import Chart from 'react-apexcharts';
 import {
     LineChart,
     Line,
@@ -13,7 +12,9 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    Legend, ResponsiveContainer
+    Legend, 
+    ResponsiveContainer, 
+    ReferenceLine
 } from "recharts";
 
 Modal.setAppElement('#root');
@@ -79,7 +80,13 @@ function Detail() {
 
     const unixTimestampConverter = (timestamp: number) => {
         const date = new Date(timestamp * 1000);
-        return format(date, "dd.MM.yyyy HH:mm");
+        const timeZoneOffset = 1;
+        const adjustedDate = new Date(date.setHours(date.getHours() + timeZoneOffset));
+        return format(adjustedDate, 'dd.MM.yyyy HH:mm');
+    };
+
+    const stringToDateConverter = (datetime: string) => {
+        return datetime.split(" ")[0];
     };
 
 
@@ -88,38 +95,12 @@ function Detail() {
     }
 
     const sortedData : DetailItem[] = detail.slice().sort((a: DetailItem, b: DetailItem) => b.dt - a.dt);
-    console.log(sortedData);
-    const opt = sortedData.map((item: DetailItem) => (unixTimestampConverter(item.dt)));
-    const series = sortedData.map((item: DetailItem) => (item.value));
-
-    const chartOptions = {
-        options: {
-            chart: {
-                id: "basic-line",
-                stroke: {
-                    width: 1, // Adjust the line thickness here
-                    curve: "smooth", // Choose the curve style, for example, "smooth", "straight", "stepline"
-                },
-            },
-            xaxis: {
-                categories: opt,
-            },
-            stroke: {
-                width: 1,
-                curve: 'smooth',
-            },
-        },
-        series: [
-            {
-                // name: stationValue.name,
-                data: series,
-                stroke: {
-                    width: 0.5, // Adjust the line thickness here
-                    curve: "smooth", // Choose the curve style, for example, "smooth", "straight", "stepline"
-                },
-            }
-        ]
-    };
+    const modifiedDataForChart = detail.map((item: DetailItem) => {
+        return {
+          value: item.value,
+          dt: unixTimestampConverter(item.dt),
+        };
+      });
 
     const CustomModal = ({ isOpen, closeModal }: { isOpen: boolean; closeModal: CloseModalFunction }) => {
         return (
@@ -134,15 +115,9 @@ function Detail() {
                 </button>
                 <h2>{stationValue.name}</h2>
                 <div style={{ width: "100%", height: "100%" }}>
-                    {/*<Chart*/}
-                    {/*    options={chartOptions.options}*/}
-                    {/*    series={chartOptions.series}*/}
-                    {/*    width="100%"*/}
-                    {/*    type={'line'}*/}
-                    {/*/>*/}
                     <ResponsiveContainer>
                         <LineChart
-                            data={sortedData}
+                            data={modifiedDataForChart}
                             margin={{
                                 top: 5,
                                 right: 30,
@@ -150,17 +125,15 @@ function Detail() {
                                 bottom: 50
                             }}
                         >
-                            <CartesianGrid strokeDasharray="3 3" />
+                            <ReferenceLine y={400} stroke="red" label={{ value: 'Alarm', position: 'insideTopLeft', dy: -20 }} />
+                            <CartesianGrid />
                             <XAxis
                                 dataKey="dt"
-                                tickFormatter={unixTimestampConverter}
-                                angle={-45}
+                                tick={{ fontSize: 12 }}
+                                tickFormatter={stringToDateConverter}
+                                interval={50} 
                             />
-                            <XAxis
-                                values={'400'}
-                                tickFormatter={unixTimestampConverter}
-                            />
-                            <YAxis />
+                            <YAxis domain={[0, 550]} ticks={[40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520, 560]} />
                             <Tooltip/>
                             <Legend />
                             <Line
@@ -185,7 +158,6 @@ function Detail() {
             <button onClick={closeDetail} className="btn close-button">
                 <span>×</span>
             </button>
-            <h4>History data</h4>
             <p>
                 {stationValue.name}
             </p>
@@ -207,7 +179,7 @@ function Detail() {
                     </tbody>
                 </table>
             </div>
-            <div className={'d-flex justify-content-between'}>
+            <div className={'d-flex justify-content-between pt-2'}>
                 <small>[ID: {stationValue.id}]</small>
                 <small>
                     <button className="btn btn-link p-0" onClick={openModal}>Show more</button>

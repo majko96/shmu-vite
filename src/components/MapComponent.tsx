@@ -114,8 +114,6 @@ function MapComponent() {
                     >
                         <Popup>
                             <div>
-                                <h5>Detail</h5>
-                                <hr/>
                                 <p>Name: {feature.properties.prop_name}</p>
                                 <p>Alarm: {feature.properties.prop_alarm.toString()}</p>
                                 {unixTimestampConverter(feature.properties.prop_dt)}
@@ -126,7 +124,7 @@ function MapComponent() {
                                     <button onClick={() => {
                                         getStationDetail(feature.id, feature.properties.prop_name)
                                     }}
-                                            className={'btn btn-secondary'}
+                                            className={'btn btn-link'}
                                     >
                                         History
                                     </button>
@@ -134,33 +132,6 @@ function MapComponent() {
                             </div>
                         </Popup>
                     </CircleMarker>
-                    // <Marker
-                    //     key={index}
-                    //     position={[feature.geometry.coordinates[1], feature.geometry.coordinates[0]]}
-                    //     icon={feature.properties.prop_alarm ? redIcon : greenIcon}
-                    // >
-                    //     <Popup>
-                    //         <div>
-                    //             <h5>Detail</h5>
-                    //             <hr/>
-                    //             <p>Name: {feature.properties.prop_name}</p>
-                    //             <p>Alarm: {feature.properties.prop_alarm.toString()}</p>
-                    //             {unixTimestampConverter(feature.properties.prop_dt)}
-                    //             <p>Value: {feature.properties.prop_value} nSv/h</p>
-                    //             <hr/>
-                    //             <div className={'d-flex justify-content-between align-items-center'}>
-                    //                 <small>ID: {feature.id}</small>
-                    //                 <button onClick={() => {
-                    //                     getStationDetail(feature.id, feature.properties.prop_name)
-                    //                 }}
-                    //                         className={'btn btn-secondary'}
-                    //                 >
-                    //                     History
-                    //                 </button>
-                    //             </div>
-                    //         </div>
-                    //     </Popup>
-                    // </Marker>
                 ))}
             </MapContainer>
         </>
