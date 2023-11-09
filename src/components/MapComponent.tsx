@@ -2,7 +2,7 @@ import 'leaflet/dist/leaflet.css';
 import {CircleMarker, MapContainer, Popup, TileLayer} from 'react-leaflet';
 import {LatLng} from 'leaflet';
 import axios, {AxiosResponse} from 'axios';
-import {useEffect, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {format} from 'date-fns';
 import {useRecoilState} from 'recoil';
 import {station, tableData} from '../atoms';
@@ -34,9 +34,10 @@ interface Properties {
 function MapComponent() {
     const position = new LatLng(48.6811522, 19.7028646); // Slovakia.
     const [stations, setStations] = useState<Feature[] | null>(null);
-    const [_stationValue, setStationValue] = useRecoilState(station);
+    const [stationValue, setStationValue] = useRecoilState(station);
     const [_tableData, setTableData] = useRecoilState(tableData);
     const [hasError, setHasError] = useState(false);
+    const markerRefs = useRef<{ [key: number]: any }>({});
 
     const getStationDetail = (id: number, name: string) => {
         setStationValue((prevState: any) => ({
@@ -60,6 +61,13 @@ function MapComponent() {
         };
         fetchData().then();
     }, []);
+
+    useEffect(() => {
+        const markerRef = markerRefs.current[stationValue.id];
+        if (markerRef) {
+            markerRef.openPopup();
+        }
+    })
 
     const unixTimestampConverter = (timestamp: number) => {
         const date = new Date(timestamp * 1000);
@@ -86,6 +94,10 @@ function MapComponent() {
         getStationDetail(id, name);
     }
 
+    const handleMarkerPopupClose = () => {
+        setStationValue({id: null, name: null});
+    }
+
     return (
         <>
             <MapContainer
@@ -97,9 +109,9 @@ function MapComponent() {
                     attribution="Google Maps"
                     url="https://www.google.cn/maps/vt?lyrs=m@189&gl=cn&x={x}&y={y}&z={z}"
                 />
-                {stations.map((feature, index) => (
+                {stations.map((feature: Feature) => (
                     <CircleMarker
-                        key={index}
+                        key={feature.id}
                         center={[feature.geometry.coordinates[1], feature.geometry.coordinates[0]]}
                         fillColor={feature.properties.prop_alarm ? 'red' : 'green'}
                         color={'#000'}
@@ -108,8 +120,10 @@ function MapComponent() {
                         eventHandlers={{
                             click: () => {
                                 handleMarkerClick(feature.id, feature.properties.prop_name);
-                            }
+                            },
+                            popupclose: () => handleMarkerPopupClose(),
                         }}
+                        ref={(ref) => (markerRefs.current[feature.id] = ref)}
                     >
                         <Popup>
                             <div>

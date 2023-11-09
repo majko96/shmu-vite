@@ -63,6 +63,7 @@
 .btn-link {
     font-size: 12px;
     color: #333;
+    text-decoration: underline;
 }
 
 .btn-link:hover{

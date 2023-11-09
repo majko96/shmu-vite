@@ -1,6 +1,6 @@
 import {atom, RecoilState} from 'recoil';
 
-export const station = atom({
+export const station: RecoilState<any> = atom({
   key: 'station',
   default: {
     id: null,
@@ -15,7 +15,7 @@ export const modal = atom({
   },
 });
 
-export const tableData:RecoilState<any> = atom({
+export const tableData: RecoilState<any> = atom({
   key: 'data',
   default: {
     values: null,

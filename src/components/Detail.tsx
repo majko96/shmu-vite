@@ -94,11 +94,11 @@ function Detail() {
         return datetime.split(" ")[0];
     };
 
-    if (closeDetail) {
+    if (closeDetail || detail === null || detail === undefined || stationValue.id === null) {
         return;
     }
 
-    if (isLoading || detail === null || detail === undefined) {
+    if (isLoading) {
         return (
             <div className={'card data-box'}>
                 <div className='loader'></div>
@@ -195,7 +195,7 @@ function Detail() {
             <div className={'d-flex justify-content-between pt-2'}>
                 <small>[ID: {stationValue.id}]</small>
                 <small>
-                    <button className="btn btn-link p-0" onClick={openModal}>Show more</button>
+                    <button className="btn btn-link p-0" onClick={openModal}>Chart</button>
                 </small>
             </div>
             <div>

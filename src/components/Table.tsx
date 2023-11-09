@@ -1,11 +1,12 @@
 import Modal from "react-modal";
 import {useRecoilState} from "recoil";
-import {modal, tableData} from "../atoms.ts";
+import {modal, station, tableData} from "../atoms.ts";
 import {format} from "date-fns";
 
 function Table() {
     const [isOpenModal, setIsOpenModal] = useRecoilState(modal);
     const [data, _setData] = useRecoilState(tableData);
+    const [_stationValue, setStationValue] = useRecoilState(station);
 
     const customStyles: Modal.Styles = {
         overlay: {
@@ -51,6 +52,15 @@ function Table() {
         )
     }
 
+    const redirectToStation = (id: any, name: string) => {
+        setIsOpenModal({state: false})
+        setStationValue((prevState: any) => ({
+            ...prevState,
+            id: id,
+            name: name,
+        }));
+    }
+
     return (
         <>
             <Modal
@@ -63,24 +73,33 @@ function Table() {
                     <button onClick={closeModal} className="btn close-button">
                         <span>×</span>
                     </button>
-                    <table className="table table-striped table-bordered">
-                        <thead>
-                        <tr>
-                            <th>Station</th>
-                            <th>Date</th>
-                            <th>Value</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {data.values.map((item: any, index: number) => (
-                            <tr key={index}>
-                                <td>{item.properties.prop_name}</td>
-                                <td>{unixTimestampConverter(item.properties.prop_dt)}</td>
-                                <td>{item.properties.prop_value} nSv/h</td>
+                    <div style={{ maxHeight: "100%", overflowY: "auto" }} className={'m-3'}>
+                        <table className="table table-striped table-bordered">
+                            <thead>
+                            <tr>
+                                <th>Station</th>
+                                <th>Date</th>
+                                <th>Value</th>
                             </tr>
-                        ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                            {data.values.map((item: any, index: number) => (
+                                <tr key={index}>
+                                    <td className={'btn-link'}>
+                                        <button
+                                            className={'btn btn-link'}
+                                            onClick={() => {redirectToStation(item.id, item.properties.prop_name)}}
+                                        >
+                                            {item.properties.prop_name}
+                                        </button>
+                                    </td>
+                                    <td>{unixTimestampConverter(item.properties.prop_dt)}</td>
+                                    <td>{item.properties.prop_value} nSv/h</td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </>
             </Modal>
         </>
