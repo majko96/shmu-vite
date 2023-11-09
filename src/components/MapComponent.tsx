@@ -81,6 +81,10 @@ function MapComponent() {
         )
     }
 
+    const handleMarkerClick = (id: number, name: string) => {
+        getStationDetail(id, name);
+    }
+
     return (
         <>
             <MapContainer
@@ -111,6 +115,11 @@ function MapComponent() {
                         color={'#000'}
                         fillOpacity={100}
                         weight={1}
+                        eventHandlers={{
+                            click: () => {
+                              handleMarkerClick(feature.id, feature.properties.prop_name);
+                            }
+                          }}
                     >
                         <Popup>
                             <div>
@@ -118,16 +127,9 @@ function MapComponent() {
                                 <p>Alarm: {feature.properties.prop_alarm.toString()}</p>
                                 {unixTimestampConverter(feature.properties.prop_dt)}
                                 <p>Value: {feature.properties.prop_value} nSv/h</p>
-                                <hr/>
-                                <div className={'d-flex justify-content-between align-items-center'}>
+                                <hr className='mt-0 mb-1'/>
+                                <div className={'d-flex justify-content-end align-items-center'}>
                                     <small>ID: {feature.id}</small>
-                                    <button onClick={() => {
-                                        getStationDetail(feature.id, feature.properties.prop_name)
-                                    }}
-                                            className={'btn btn-link'}
-                                    >
-                                        History
-                                    </button>
                                 </div>
                             </div>
                         </Popup>

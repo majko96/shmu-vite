@@ -29,6 +29,8 @@ function Detail() {
     const [stationValue] = useRecoilState(station);
     const [detail, setDetail]: any = useState(null);
     const [modalIsOpen, setIsOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [closeDetail, setCLoseDetail] = useState(true);
 
     function openModal() {
         setIsOpen(true);
@@ -65,11 +67,14 @@ function Detail() {
 
     useEffect(() => {
         if (stationValue.id !== null) {
+            setCLoseDetail(false);
+            setIsLoading(true);
             const fetchData = async () => {
                 try {
                     const response = await axios.get(
                         `https://w5.shmu.sk/api/v1/meteo/getradiationdata?station=${stationValue.id}&history=720`);
                     setDetail(response.data.data);
+                    setIsLoading(false);
                 } catch (error) {
                     console.log('something went wrong...')
                 }
@@ -89,9 +94,16 @@ function Detail() {
         return datetime.split(" ")[0];
     };
 
-
-    if (detail === null || detail === undefined) {
+    if (closeDetail) {
         return;
+    }
+
+    if (isLoading || detail === null || detail === undefined) {
+        return (
+            <div className={'card data-box'}>
+                <div className='loader'></div>
+            </div>
+        )
     }
 
     const sortedData : DetailItem[] = detail.slice().sort((a: DetailItem, b: DetailItem) => b.dt - a.dt);
@@ -149,20 +161,21 @@ function Detail() {
         );
     };
 
-    const closeDetail = () => {
+    const closeDetailWindow = () => {
+        setCLoseDetail(true);
         setDetail(null);
     }
 
     return (
         <div className={'card data-box'}>
-            <button onClick={closeDetail} className="btn close-button">
+            <button onClick={closeDetailWindow} className="btn close-button">
                 <span>×</span>
             </button>
             <p>
                 {stationValue.name}
             </p>
             <div className={'data-box-table'}>
-                <table className="table">
+                <table className="table table-striped table-bordered">
                     <thead>
                     <tr>
                         <th>Date</th>
