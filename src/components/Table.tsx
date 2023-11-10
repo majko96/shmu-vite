@@ -8,30 +8,64 @@ function Table() {
     const [data, _setData] = useRecoilState(tableData);
     const [_stationValue, setStationValue] = useRecoilState(station);
 
-    const customStyles: Modal.Styles = {
-        overlay: {
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 1000,
-        },
-        content: {
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            right: 'auto',
-            bottom: 'auto',
-            marginRight: '-50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 1000,
-            height: '80%',
-            width: '80%',
-            overflow: 'hidden'
-        },
-    };
+
+    const getStyles = () => {
+        const customStyles: Modal.Styles = {
+            overlay: {
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 1000,
+            },
+            content: {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                right: 'auto',
+                bottom: 'auto',
+                marginRight: '-50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 1000,
+                height: '80%',
+                width: '80%',
+                overflow: 'hidden'
+            },
+        };
+
+        const mobileStyles: Modal.Styles = {
+            overlay: {
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 1000,
+            },
+            content: {
+                position: 'absolute',
+                top: 'auto',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 1000,
+                height: '80%',
+                width: '100%',
+                overflow: 'hidden',
+                bottom: 0,
+                padding: '30px 5px',
+            },
+        };
+        if (window.innerWidth <= 900) {
+            return mobileStyles;
+        } else {
+            return customStyles;
+        }
+    }
+
+    
 
     const closeModal = () => {
         setIsOpenModal({state: false});
@@ -67,7 +101,7 @@ function Table() {
                 isOpen={isOpenModal.state}
                 onRequestClose={closeModal}
                 contentLabel="table"
-                style={customStyles}
+                style={getStyles()}
             >
                 <>
                     <button onClick={closeModal} className="btn close-button">
@@ -85,9 +119,9 @@ function Table() {
                             <tbody>
                             {data.values.map((item: any, index: number) => (
                                 <tr key={index}>
-                                    <td className={'btn-link'}>
+                                    <td className={'align-middle'}>
                                         <button
-                                            className={'btn btn-link'}
+                                            className={'btn btn-link text-left'}
                                             onClick={() => {redirectToStation(item.id, item.properties.prop_name)}}
                                         >
                                             {item.properties.prop_name}

@@ -40,30 +40,61 @@ function Detail() {
         setIsOpen(false);
     }
 
-    const customStyles: Modal.Styles = {
-        overlay: {
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.5)',
-            zIndex: 1000,
-        },
-        content: {
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            right: 'auto',
-            bottom: 'auto',
-            marginRight: '-50%',
-            transform: 'translate(-50%, -50%)',
-            zIndex: 1000,
-            height: '80%',
-            width: '80%',
-            overflow: 'hidden'
-        },
-    };
+    const getStyles = () => {
+        const customStyles: Modal.Styles = {
+            overlay: {
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 1000,
+            },
+            content: {
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                right: 'auto',
+                bottom: 'auto',
+                marginRight: '-50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 1000,
+                height: '80%',
+                width: '80%',
+                overflow: 'hidden'
+            },
+        };
+
+        const mobileStyles: Modal.Styles = {
+            overlay: {
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 1000,
+            },
+            content: {
+                position: 'absolute',
+                top: 'auto',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 1000,
+                height: '80%',
+                width: '100%',
+                overflow: 'hidden',
+                bottom: 0,
+                padding: '30px 20px 0 0',
+            },
+        };
+        if (window.innerWidth <= 900) {
+            return mobileStyles;
+        } else {
+            return customStyles;
+        }
+    }
 
     useEffect(() => {
         if (stationValue.id !== null) {
@@ -120,7 +151,7 @@ function Detail() {
                 isOpen={isOpen}
                 onRequestClose={closeModal}
                 contentLabel="chart"
-                style={customStyles}
+                style={getStyles()}
             >
                 <button onClick={closeModal} className="btn close-button">
                     <span>×</span>
@@ -143,7 +174,7 @@ function Detail() {
                                 dataKey="dt"
                                 tick={{ fontSize: 12 }}
                                 tickFormatter={stringToDateConverter}
-                                interval={50} 
+                                interval={window.innerWidth <= 500 ? 150 : 50} 
                             />
                             <YAxis domain={[0, 550]} ticks={[40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520, 560]} />
                             <Tooltip/>

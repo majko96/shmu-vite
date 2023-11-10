@@ -84,3 +84,36 @@
     width: auto;
     height: 60px;
 }
+
+@media only screen and (max-width: 500px) {
+    .data-box {
+        top: auto;
+        right: auto;
+        position: absolute;
+        bottom: 0px;
+        height: 600px;
+        z-index: 999;
+        overflow: hidden;
+        border-radius: 0;
+        padding: 30px;
+        width: 100%;
+    }
+
+    .sticky-button {
+        position: fixed;
+        bottom: auto;
+        right: 10px;
+        top: 10px;
+        background-color: transparent;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        z-index: 999;
+        width: auto;
+        height: 60px;
+    }
+  }
+
+  table td {
+    vertical-align: bottom !important;
+  }
