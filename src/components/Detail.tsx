@@ -30,7 +30,7 @@ function Detail() {
     const [detail, setDetail]: any = useState(null);
     const [modalIsOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [closeDetail, setCLoseDetail] = useState(true);
+    const [closeDetail, setCloseDetail] = useState(true);
 
     function openModal() {
         setIsOpen(true);
@@ -67,7 +67,7 @@ function Detail() {
 
     useEffect(() => {
         if (stationValue.id !== null) {
-            setCLoseDetail(false);
+            setCloseDetail(false);
             setIsLoading(true);
             const fetchData = async () => {
                 try {
@@ -162,7 +162,7 @@ function Detail() {
     };
 
     const closeDetailWindow = () => {
-        setCLoseDetail(true);
+        setCloseDetail(true);
         setDetail(null);
     }
 

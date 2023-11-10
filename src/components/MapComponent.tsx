@@ -66,6 +66,15 @@ function MapComponent() {
         const markerRef = markerRefs.current[stationValue.id];
         if (markerRef) {
             markerRef.openPopup();
+        } else {
+            if (markerRefs.current) {
+                for (const key in markerRefs.current) {
+                    if (markerRefs.current.hasOwnProperty(key)) {
+                      const markerReference = markerRefs.current[key];
+                      markerReference.closePopup();
+                    }
+                  }
+              }
         }
     })
 
@@ -91,7 +100,12 @@ function MapComponent() {
     }
 
     const handleMarkerClick = (id: number, name: string) => {
-        getStationDetail(id, name);
+        setStationValue({id: id, name: name});
+        if (stationValue.id) {
+            getStationDetail(id, name);
+        } else {
+            handleMarkerPopupClose;
+        }
     }
 
     const handleMarkerPopupClose = () => {
@@ -121,7 +135,6 @@ function MapComponent() {
                             click: () => {
                                 handleMarkerClick(feature.id, feature.properties.prop_name);
                             },
-                            popupclose: () => handleMarkerPopupClose(),
                         }}
                         ref={(ref) => (markerRefs.current[feature.id] = ref)}
                     >

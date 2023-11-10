@@ -76,11 +76,11 @@ function Table() {
                     <div style={{ maxHeight: "100%", overflowY: "auto" }} className={'m-3'}>
                         <table className="table table-striped table-bordered">
                             <thead>
-                            <tr>
-                                <th>Station</th>
-                                <th>Date</th>
-                                <th>Value</th>
-                            </tr>
+                                <tr>
+                                    <th>Station</th>
+                                    <th>Date</th>
+                                    <th>Value</th>
+                                </tr>
                             </thead>
                             <tbody>
                             {data.values.map((item: any, index: number) => (
