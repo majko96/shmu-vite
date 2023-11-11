@@ -3,6 +3,8 @@ import {useRecoilState} from "recoil";
 import {modal, station, tableData} from "../atoms.ts";
 import {format} from "date-fns";
 
+Modal.setAppElement('#root');
+
 function Table() {
     const [isOpenModal, setIsOpenModal] = useRecoilState(modal);
     const [data, _setData] = useRecoilState(tableData);

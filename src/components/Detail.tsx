@@ -156,7 +156,9 @@ function Detail() {
                 <button onClick={closeModal} className="btn close-button">
                     <span>×</span>
                 </button>
-                <h2>{stationValue.name}</h2>
+                <div>
+                    <h2 className='ml-5'>{stationValue.name}</h2>
+                </div>
                 <div style={{ width: "100%", height: "100%" }}>
                     <ResponsiveContainer>
                         <LineChart
@@ -174,7 +176,7 @@ function Detail() {
                                 dataKey="dt"
                                 tick={{ fontSize: 12 }}
                                 tickFormatter={stringToDateConverter}
-                                interval={window.innerWidth <= 500 ? 150 : 50} 
+                                interval={window.innerWidth <= 500 ? 200 : 50} 
                             />
                             <YAxis domain={[0, 550]} ticks={[40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520, 560]} />
                             <Tooltip/>

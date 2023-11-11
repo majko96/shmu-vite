@@ -23,7 +23,7 @@ function App() {
             }
             <div className="sticky-button">
                 <button
-                    className='btn btn-secondary'
+                    className='btn btn-secondary p-3'
                     onClick={showTable}
                 >
                     Show all

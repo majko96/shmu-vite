@@ -78,7 +78,6 @@
     right: 30px;
     background-color: transparent;
     padding: 10px;
-    border: 1px solid #ddd;
     border-radius: 5px;
     z-index: 999;
     width: auto;
@@ -97,6 +96,7 @@
         border-radius: 0;
         padding: 30px;
         width: 100%;
+        animation: slide 1s;
     }
 
     .sticky-button {
@@ -106,14 +106,38 @@
         top: 10px;
         background-color: transparent;
         padding: 10px;
-        border: 1px solid #ddd;
         border-radius: 5px;
         z-index: 999;
         width: auto;
         height: 60px;
     }
-  }
+}
 
-  table td {
+table td {
     vertical-align: bottom !important;
-  }
+}
+
+table .btn-link {
+    font-size: 14px;
+}
+
+table .btn-link:hover {
+    font-size: 14px;
+}
+
+.ReactModal__Overlay {
+    opacity: 0;
+    transition: opacity 300ms ease-in-out;
+}
+
+.ReactModal__Overlay--after-open{
+    opacity: 1;}
+
+.ReactModal__Overlay--before-close{
+    opacity: 0;
+}
+
+@keyframes slide {
+    from {height: 0;}
+    to {height: 600px;}
+}
