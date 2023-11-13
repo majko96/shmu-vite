@@ -4,6 +4,7 @@ import Detail from './components/Detail.tsx';
 import Table from "./components/Table.tsx";
 import {useRecoilState} from "recoil";
 import {modal, station} from "./atoms.ts";
+import Navbar from "./components/Navbar.tsx";
 
 function App() {
     const [isOpenModal, setIsOpenModal] = useRecoilState(modal);
@@ -16,6 +17,7 @@ function App() {
 
     return (
         <div>
+            <Navbar></Navbar>
             <MapComponent/>
             <Detail/>
             { isOpenModal &&
@@ -23,10 +25,9 @@ function App() {
             }
             <div className="sticky-button">
                 <button
-                    className='btn btn-secondary p-3'
+                    className='btn btn-menu p-3'
                     onClick={showTable}
                 >
-                    Show all
                 </button>
             </div>
         </div>

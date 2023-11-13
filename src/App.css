@@ -1,5 +1,5 @@
 .leaflet-container {
-    height: 100vh;
+    height: calc(100vh - 56px);
 }
 
 .loader {
@@ -31,7 +31,7 @@
 
 .data-box {
     position: absolute;
-    top: 40px;
+    top: 80px;
     right: 40px;
     height: 600px;
     z-index: 999;
@@ -90,7 +90,7 @@
         right: auto;
         position: absolute;
         bottom: 0px;
-        height: 600px;
+        height: 400px;
         z-index: 999;
         overflow: hidden;
         border-radius: 0;
@@ -102,8 +102,8 @@
     .sticky-button {
         position: fixed;
         bottom: auto;
-        right: 10px;
-        top: 10px;
+        right: 0px;
+        top: 60px;
         background-color: transparent;
         padding: 10px;
         border-radius: 5px;
@@ -139,5 +139,14 @@ table .btn-link:hover {
 
 @keyframes slide {
     from {height: 0;}
-    to {height: 600px;}
+    to {height: 400px;}
+}
+
+.btn-menu {
+    background-color: white;
+    background-image: url('assets/table.png');
+    width: 50px;
+    height: 50px;
+    object-fit: cover;
+    background-size: cover;
 }
