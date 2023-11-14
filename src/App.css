@@ -3,6 +3,7 @@ body {
 }
 
 .leaflet-container {
+    margin-top: 56px;
     height: calc(100vh - 56px);
 }
 
@@ -91,9 +92,9 @@ body {
 @media only screen and (max-width: 500px) {
     .data-box {
         top: auto;
-        right: auto;
-        position: absolute;
-        bottom: 0px;
+        right: 0;
+        position: fixed;
+        bottom: 0;
         height: 400px;
         z-index: 999;
         overflow: hidden;
@@ -111,9 +112,13 @@ body {
         background-color: transparent;
         padding: 10px;
         border-radius: 5px;
-        z-index: 999;
+        z-index: 3000;
         width: auto;
         height: 60px;
+    }
+
+    .btn-menu {
+        background-color: transparent !important;
     }
 }
 
@@ -147,10 +152,14 @@ table .btn-link:hover {
 }
 
 .btn-menu {
-    background-color: white;
+    background-color: #fff;
     background-image: url('assets/table.png');
     width: 50px;
     height: 50px;
     object-fit: cover;
     background-size: cover;
+}
+
+nav {
+    background-color: #fff;
 }
