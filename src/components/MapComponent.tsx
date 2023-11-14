@@ -6,6 +6,8 @@ import {useEffect, useRef, useState} from 'react';
 import {format} from 'date-fns';
 import {useRecoilState} from 'recoil';
 import {station, tableData} from '../atoms';
+import Danger from '../assets/danger.png';
+import Check from '../assets/check.png'
 
 interface RadiationData {
     type: string;
@@ -69,7 +71,7 @@ function MapComponent() {
         } else {
             if (markerRefs.current) {
                 for (const key in markerRefs.current) {
-                    if (markerRefs.current.hasOwnProperty(key)) {
+                    if (Object.prototype.hasOwnProperty.call(markerRefs.current, key)) {
                       const markerReference = markerRefs.current[key];
                       markerReference.closePopup();
                     }
@@ -80,11 +82,9 @@ function MapComponent() {
 
     const unixTimestampConverter = (timestamp: number) => {
         const date = new Date(timestamp * 1000);
-        const formattedDateTime = format(date, "dd.MM.yyyy HH:mm");
-
-        return (
-            <p>Date: {formattedDateTime}</p>
-        );
+        const timeZoneOffset = 1;
+        const adjustedDate = new Date(date.setHours(date.getHours() + timeZoneOffset));
+        return format(adjustedDate, 'dd.MM.yyyy HH:mm');
     };
 
     if (hasError) {
@@ -110,6 +110,17 @@ function MapComponent() {
 
     const handleMarkerPopupClose = () => {
         setStationValue({id: null, name: null});
+    }
+
+    const renderStatusIcon = (alarm: boolean) => {
+        if (alarm) {
+            return (
+                <img src={Danger} alt={'danger'} width={'20px'} height={'20px'}></img>
+            )
+        }
+        return (
+            <img src={Check} alt={'danger'} width={'20px'} height={'20px'}></img>
+        )
     }
 
     return (
@@ -139,14 +150,22 @@ function MapComponent() {
                         ref={(ref) => (markerRefs.current[feature.id] = ref)}
                     >
                         <Popup>
-                            <div>
-                                <p>Name: {feature.properties.prop_name}</p>
-                                <p>Alarm: {feature.properties.prop_alarm.toString()}</p>
-                                {unixTimestampConverter(feature.properties.prop_dt)}
-                                <p>Value: {feature.properties.prop_value} nSv/h</p>
-                                <hr className='mt-0 mb-1'/>
-                                <div className={'d-flex justify-content-end align-items-center'}>
-                                    <small>ID: {feature.id}</small>
+                            <div className={'text-left'}>
+                                <div>
+                                    <b>{feature.properties.prop_name}</b>
+                                </div>
+                                <div className={'mt-1'}>
+                                    {unixTimestampConverter(feature.properties.prop_dt)}
+                                </div>
+                                <div className={'mt-1 mb-1'}>
+                                    {feature.properties.prop_value} nSv/h
+                                </div>
+                                <hr className='mt-1 mb-1'/>
+                                <div className={'d-flex justify-content-between align-items-center'}>
+                                    <div>
+                                        {renderStatusIcon(feature.properties.prop_alarm)}
+                                    </div>
+                                    <small>[ID: {feature.id}]</small>
                                 </div>
                             </div>
                         </Popup>

@@ -2,7 +2,7 @@ import 'leaflet/dist/leaflet.css';
 import {useRecoilState} from 'recoil';
 import {station} from '../atoms';
 import axios from 'axios';
-import {useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {format} from 'date-fns';
 import Modal from 'react-modal';
 import {
@@ -145,7 +145,24 @@ function Detail() {
         };
       });
 
-    const CustomModal = ({ isOpen, closeModal }: { isOpen: boolean; closeModal: CloseModalFunction }) => {
+    const CustomTooltip: React.FC<any> = ({ active, payload }) => {
+        if (active && payload && payload.length) {
+            const dataPoint = payload[0];
+            return (
+                <div className={'card p-3'}>
+                    <div>
+                        {`${dataPoint.payload.dt}`}
+                    </div>
+                    <div>
+                        {`${dataPoint.value} nSv/h`}
+                    </div>
+                </div>
+            );
+        }
+        return null;
+    };
+
+    const CustomModal = ({isOpen, closeModal}: { isOpen: boolean; closeModal: CloseModalFunction }) => {
         return (
             <Modal
                 isOpen={isOpen}
@@ -178,8 +195,8 @@ function Detail() {
                                 tickFormatter={stringToDateConverter}
                                 interval={window.innerWidth <= 500 ? 200 : 50} 
                             />
-                            <YAxis domain={[0, 550]} ticks={[40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520, 560]} />
-                            <Tooltip/>
+                            <YAxis domain={[0, 550]} ticks={[40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520, 560]}/>
+                            <Tooltip content={<CustomTooltip />} />
                             <Legend />
                             <Line
                                 type="monotone"
