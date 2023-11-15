@@ -2,6 +2,7 @@ import Modal from "react-modal";
 import {useRecoilState} from "recoil";
 import {modal, station, tableData} from "../atoms.ts";
 import {format} from "date-fns";
+import React, {useState} from "react";
 
 Modal.setAppElement('#root');
 
@@ -9,7 +10,27 @@ function Table() {
     const [isOpenModal, setIsOpenModal] = useRecoilState(modal);
     const [data, _setData] = useRecoilState(tableData);
     const [_stationValue, setStationValue] = useRecoilState(station);
+    const [searchTerm, setSearchTerm] = useState<string>('');
 
+    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchTerm(event.target.value);
+    };
+
+    const removeDiacritics = (str: string) => {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    };
+
+    const filteredData = data.values
+        ? data.values.filter((item: any) =>
+            removeDiacritics(item.properties.prop_name.toLowerCase()).includes(
+                removeDiacritics(searchTerm.toLowerCase())
+            )
+        )
+        : [];
+
+    const handleClearSearch = () => {
+        setSearchTerm('');
+    };
 
     const getStyles = () => {
         const customStyles: Modal.Styles = {
@@ -67,7 +88,6 @@ function Table() {
         }
     }
 
-    
 
     const closeModal = () => {
         setIsOpenModal({state: false});
@@ -81,11 +101,7 @@ function Table() {
     };
 
     if (data.values === null) {
-        return (
-            <div className={'card data-box'}>
-                <div className='loader'></div>
-            </div>
-        )
+        return;
     }
 
     const redirectToStation = (id: any, name: string) => {
@@ -95,6 +111,48 @@ function Table() {
             id: id,
             name: name,
         }));
+    }
+
+    const renderTableBody = () => {
+        if (searchTerm) {
+            return (
+                filteredData.map((item: any, index: number) => (
+                        <tr key={index}>
+                            <td className={'align-middle'}>
+                                <button
+                                    className={'btn btn-link text-left'}
+                                    onClick={() => {
+                                        redirectToStation(item.id, item.properties.prop_name)
+                                    }}
+                                >
+                                    {item.properties.prop_name}
+                                </button>
+                            </td>
+                            <td>{unixTimestampConverter(item.properties.prop_dt)}</td>
+                            <td>{item.properties.prop_value} nSv/h</td>
+                        </tr>
+                    ))
+
+            )
+        }
+        return (
+            data.values.map((item: any, index: number) => (
+                    <tr key={index}>
+                        <td className={'align-middle'}>
+                            <button
+                                className={'btn btn-link text-left'}
+                                onClick={() => {
+                                    redirectToStation(item.id, item.properties.prop_name)
+                                }}
+                            >
+                                {item.properties.prop_name}
+                            </button>
+                        </td>
+                        <td>{unixTimestampConverter(item.properties.prop_dt)}</td>
+                        <td>{item.properties.prop_value} nSv/h</td>
+                    </tr>
+                ))
+        )
     }
 
     return (
@@ -109,30 +167,38 @@ function Table() {
                     <button onClick={closeModal} className="btn close-button">
                         <span>×</span>
                     </button>
-                    <div style={{ maxHeight: "100%", overflowY: "auto" }} className={'m-3'}>
+                    <div className="m-3">
+                        <div className="input-group">
+                            <input
+                                type="text"
+                                placeholder="Search by Station"
+                                value={searchTerm}
+                                onChange={handleSearch}
+                                className="form-control focus-input"  // Add the focus-input class
+                            />
+                            {searchTerm && (
+                                <button
+                                    className="btn btn-outline-secondary"
+                                    type="button"
+                                    onClick={handleClearSearch}
+                                    style={{borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}
+                                >
+                                    Clear
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    <div style={{maxHeight: "90%", overflowY: "auto"}} className={'m-3'}>
                         <table className="table table-striped table-bordered">
                             <thead>
-                                <tr>
-                                    <th>Station</th>
-                                    <th>Date</th>
-                                    <th>Value</th>
-                                </tr>
+                            <tr>
+                                <th>Station</th>
+                                <th>Date</th>
+                                <th>Value</th>
+                            </tr>
                             </thead>
                             <tbody>
-                            {data.values.map((item: any, index: number) => (
-                                <tr key={index}>
-                                    <td className={'align-middle'}>
-                                        <button
-                                            className={'btn btn-link text-left'}
-                                            onClick={() => {redirectToStation(item.id, item.properties.prop_name)}}
-                                        >
-                                            {item.properties.prop_name}
-                                        </button>
-                                    </td>
-                                    <td>{unixTimestampConverter(item.properties.prop_dt)}</td>
-                                    <td>{item.properties.prop_value} nSv/h</td>
-                                </tr>
-                            ))}
+                                {renderTableBody()}
                             </tbody>
                         </table>
                     </div>

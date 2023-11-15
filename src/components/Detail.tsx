@@ -107,6 +107,7 @@ function Detail() {
                     setDetail(response.data.data);
                     setIsLoading(false);
                 } catch (error) {
+                    setIsLoading(false);
                     console.log('something went wrong...')
                 }
             };

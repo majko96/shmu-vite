@@ -116,18 +116,17 @@ body {
     .sticky-button {
         position: fixed;
         bottom: auto;
-        right: 0px;
-        top: -8px;
-        background-color: transparent;
-        padding: 10px;
-        border-radius: 5px;
+        right: -11px;
+        top: -10px;
         z-index: 3000;
         width: auto;
-        height: 60px;
     }
 
     .btn-menu {
-        background-color: transparent !important;
+        background-color: #fff !important;
+        border-radius: 0 !important;
+        height: 56px !important;
+        width: 56px !important;
     }
 }
 
@@ -170,5 +169,11 @@ table .btn-link:hover {
 }
 
 nav {
-    background-color: #fff;
+    background-color: #212121;
 }
+
+.form-control:focus {
+    border-color: #aaa !important;
+    box-shadow: none !important;
+}
+

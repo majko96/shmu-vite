@@ -62,7 +62,7 @@ function MapComponent() {
             }
         };
         fetchData().then();
-    }, []);
+    }, [setTableData]);
 
     useEffect(() => {
         const markerRef = markerRefs.current[stationValue.id];
@@ -119,7 +119,7 @@ function MapComponent() {
             )
         }
         return (
-            <img src={Check} alt={'danger'} width={'20px'} height={'20px'}></img>
+            <img src={Check} alt={'check'} width={'20px'} height={'20px'}></img>
         )
     }
 
