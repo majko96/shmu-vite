@@ -177,3 +177,15 @@ nav {
     box-shadow: none !important;
 }
 
+.bg-dark {
+    background-color: #212121 !important;
+}
+
+.react-datepicker-popper {
+    z-index: 1030;
+}
+
+.gap-10 {
+    gap: 10px
+}
+
