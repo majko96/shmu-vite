@@ -3,6 +3,8 @@ import Modal from "react-modal";
 import { useRecoilState } from "recoil";
 import { settingsModal, appSettings, station } from "../atoms.ts";
 import Select from 'react-select';
+import github from '../assets/github.png';
+import settingsImg from '../assets/settings.png';
 
 Modal.setAppElement('#root');
 
@@ -102,6 +104,29 @@ const Settings = () => {
         return [];
     }
 
+    const style = {
+        control: (base: any) => ({
+          ...base,
+          border: 0,
+          outline: '1px solid #ced4da !important',
+          borderColor: 'none',
+          boxShadow: 'none',
+          '&:hover': {
+            boxShadow: 'none',
+            outline: '1px solid #aaa !important',
+          },
+        }),
+        option: (styles: any, { isFocused, isSelected }: any) => ({
+          ...styles,
+          backgroundColor: isSelected ? '#343a40' : isFocused ? 'rgba(0, 0, 0, 0.07)' : undefined,
+          '&:active': {
+            backgroundColor: '#343a40',
+            color: '#fff',
+          },
+          cursor: isSelected ? 'default' : isFocused ? 'pointer' : undefined,
+        }),
+      };
+
     return (
         <>
             <Modal
@@ -113,7 +138,9 @@ const Settings = () => {
                 <button className="btn close-button" onClick={closeModal}>
                     <span>×</span>
                 </button>
-                <b>Settings</b>
+                <div className='d-flex align-items-center'>
+                    <img src={settingsImg} alt="settings" height={'20px'}/>&nbsp;<b>Settings</b>
+                </div>
                 <div style={{width: "100%", height: "100%"}}>
                     <div className="form-group row align-items-baseline mt-3">
                         <label className="col-sm-3 col-form-label">Alarm</label>
@@ -134,14 +161,24 @@ const Settings = () => {
                                 onChange={handleSelectedOption}
                                 options={getOptions()}
                                 isClearable={true}
+                                styles={style}
                             />
                         </div>
                     </div>
-                    <div className={'d-flex justify-content-center gap-10'}>
-                        <button className="btn btn-outline-dark mt-4" onClick={saveData}>
+                    <div className='d-flex justify-content-between align-items-center mt-5'>
+                        <a href={'https://github.com/majko96/shmu-vite'} target="_blank" rel="noopener noreferrer" className='btn-link'>
+                            <img src={github} alt="github" width={'80px'}/>
+                        </a>
+                        <button className="btn btn-outline-dark" onClick={saveData}>
                             Save
                         </button>
                     </div>
+                    <hr/>
+                         <small>
+                            The data used in this application is obtained from a non-public API and is exclusively used for educational purposes. 
+                            This data is protected by copyright and is the property of the API provider. It is not public data and is not intended
+                            for public sharing.
+                        </small>
                 </div>
             </Modal>
         </>
