@@ -18,7 +18,6 @@ import {
 } from "recharts";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import searchIcon from '../assets/search.png';
 
 Modal.setAppElement('#root');
 
@@ -49,6 +48,32 @@ function Detail() {
     const handleSearch = () => {
         setFilteredDetail(null);
         if (searchStartDate !== null && searchEndDate !== null) {
+            const endDate = new Date(searchEndDate);
+            endDate.setHours(23, 59, 59);
+
+            const filteredData = detail.filter((item: DetailItem) => {
+                const date = new Date(item.dt * 1000);
+                const timeZoneOffset = 1;
+                const itemDate = new Date(date.setHours(date.getHours() + timeZoneOffset));
+
+                return itemDate >= searchStartDate && itemDate <= endDate;
+            });
+            setFilteredDetail(filteredData.slice().sort((a: DetailItem, b: DetailItem) => b.dt - a.dt));
+        }
+        if (searchStartDate !== null) {
+            const endDate = new Date();
+            endDate.setHours(23, 59, 59);
+
+            const filteredData = detail.filter((item: DetailItem) => {
+                const date = new Date(item.dt * 1000);
+                const timeZoneOffset = 1;
+                const itemDate = new Date(date.setHours(date.getHours() + timeZoneOffset));
+
+                return itemDate >= searchStartDate && itemDate <= endDate;
+            });
+            setFilteredDetail(filteredData.slice().sort((a: DetailItem, b: DetailItem) => b.dt - a.dt));
+        }
+        if (searchEndDate !== null) {
             const endDate = new Date(searchEndDate);
             endDate.setHours(23, 59, 59);
 
@@ -139,12 +164,19 @@ function Detail() {
                     setIsLoading(false);
                 } catch (error) {
                     setIsLoading(false);
-                    console.log('something went wrong...')
+                    console.log('Sorry, something went wrong...')
                 }
             };
             fetchData().then();
         }
     }, [stationValue]);
+
+    useEffect(() => {
+        handleSearch();
+        if (searchStartDate === null && searchEndDate === null) {
+            setFilteredDetail(null);
+        }
+    }, [searchStartDate, searchEndDate])
 
     const unixTimestampConverter = (timestamp: number) => {
         const date = new Date(timestamp * 1000);
@@ -220,7 +252,7 @@ function Detail() {
                     <span>×</span>
                 </button>
                 <div>
-                    <h2 className='ml-5'>{stationValue.name}</h2>
+                    <p className='ml-5'>{stationValue.name}</p>
                 </div>
                 <div style={{ width: "100%", height: "100%" }}>
                     <ResponsiveContainer>
@@ -290,6 +322,14 @@ function Detail() {
         )
     }
 
+    const getMinDateTo = () => {
+        return searchStartDate !== null ? searchStartDate : addDays(subMonths(new Date(), 1), 1);
+    }
+
+    const getMaxDate = () => {
+        return searchEndDate !== null ? searchEndDate : new Date();
+    };
+
     return (
         <div className={'card data-box'}>
             <button onClick={closeDetailWindow} className="btn close-button">
@@ -307,7 +347,7 @@ function Detail() {
                         placeholderText="From"
                         className={'form-control'}
                         minDate={addDays(subMonths(new Date(), 1), 1)}
-                        maxDate={new Date()}
+                        maxDate={getMaxDate()}
                     />
                 </div>
                 <div>
@@ -317,13 +357,10 @@ function Detail() {
                         isClearable
                         placeholderText="To"
                         className={'form-control'}
-                        minDate={addDays(subMonths(new Date(), 1), 1)}
+                        minDate={getMinDateTo()}
                         maxDate={new Date()}
                     />
                 </div>
-                <button className="btn btn-dark" onClick={handleSearch}>
-                    <img src={searchIcon} width={'20px'} height={'auto'} alt="search"/>
-                </button>
             </div>
             <div className={'data-box-table'}>
                 <table className="table table-striped table-bordered">
