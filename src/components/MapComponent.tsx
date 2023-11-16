@@ -43,11 +43,10 @@ function MapComponent() {
     const [appSettingsState, _setAppSettingsState] = useRecoilState(appSettings);
     const [forceRerenderKey, setForceRerenderKey] = useState(0);
 
-    const getStationDetail = (id: number, name: string) => {
+    const getStationDetail = (id: number) => {
         setStationValue((prevState: any) => ({
             ...prevState,
             id: id,
-            name: name,
         }));
     };
 
@@ -58,8 +57,12 @@ function MapComponent() {
                     'https://w5.shmu.sk/api/v1/meteo/getradiationgeojson');
                 setStations(response.data.features);
                 setTableData({values: response.data.features});
+                const stationsData = response.data.features.map((item) => {
+                    return { id: item.id, name: item.properties.prop_name };
+                  });
+                localStorage.setItem('stations', JSON.stringify(stationsData));
             } catch (error) {
-                console.log('something went wrong...')
+                console.log('Sorry, something went wrong...')
                 setHasError(true);
             }
         };
@@ -86,9 +89,8 @@ function MapComponent() {
 
     useEffect(() => {
         const savedStationId = localStorage.getItem('stationIdValue');
-        const savedStationName = localStorage.getItem('stationNameValue');
         if (savedStationId) {
-            setStationValue({id: savedStationId, name: savedStationName});
+            setStationValue({id: savedStationId});
         }
     }, []);
 
@@ -117,10 +119,10 @@ function MapComponent() {
         )
     }
 
-    const handleMarkerClick = (id: number, name: string) => {
-        setStationValue({id: id, name: name});
+    const handleMarkerClick = (id: number) => {
+        setStationValue({id: id});
         if (stationValue.id) {
-            getStationDetail(id, name);
+            getStationDetail(id);
         } else {
             handleMarkerPopupClose;
         }
@@ -130,18 +132,42 @@ function MapComponent() {
         setStationValue({id: null, name: null});
     }
 
-    const renderStatusIcon = (alarm: boolean) => {
-        if (alarm) {
+    const renderStatusIcon = (alarm: boolean, value: number) => {
+        if (localStorage.getItem('alarmValue')) {
+            if (value > parseInt(localStorage.getItem('alarmValue'), 10)) {
+                return (
+                    <img
+                        src={Danger}
+                        alt={'danger'}
+                        width={'17px'}
+                        height={'17px'}
+                        className={'alarm-icon'}
+                    >
+                    </img>
+                );
+            }
             return (
                 <img
-                    src={Danger}
-                    alt={'danger'}
+                    src={Check}
+                    alt={'check'}
                     width={'20px'}
                     height={'20px'}
                     className={'alarm-icon'}
                 >
                 </img>
-            )
+            );
+        }
+        if (alarm) {
+            return (
+                <img
+                    src={Danger}
+                    alt={'danger'}
+                    width={'17px'}
+                    height={'17px'}
+                    className={'alarm-icon'}
+                >
+                </img>
+            );
         }
         return (
             <img
@@ -152,7 +178,7 @@ function MapComponent() {
                 className={'alarm-icon'}
             >
             </img>
-        )
+        );
     }
 
     const getMarkerColor = (alarm: boolean, value: number) => {
@@ -190,7 +216,7 @@ function MapComponent() {
                         weight={1}
                         eventHandlers={{
                             click: () => {
-                                handleMarkerClick(feature.id, feature.properties.prop_name);
+                                handleMarkerClick(feature.id);
                             },
                         }}
                         ref={(ref) => (markerRefs.current[feature.id] = ref)}
@@ -208,7 +234,7 @@ function MapComponent() {
                                         <b>{feature.properties.prop_value}</b>&nbsp;nSv/h
                                     </span>
                                     <span>
-                                        {renderStatusIcon(feature.properties.prop_alarm)}
+                                        {renderStatusIcon(feature.properties.prop_alarm, feature.properties.prop_value)}
                                     </span>
                                 </div>
                                 <hr className='mt-1 mb-1'/>

@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Modal from "react-modal";
 import { useRecoilState } from "recoil";
-import { settingsModal, appSettings } from "../atoms.ts";
+import { settingsModal, appSettings, station } from "../atoms.ts";
+import Select from 'react-select';
 
 Modal.setAppElement('#root');
 
@@ -10,6 +11,9 @@ const Settings = () => {
     const [_appSettingsState, setAppSettingsState] = useRecoilState(appSettings);
     const [alarmValue, setAlarmValue] = useState('');
     const [stationId, setStationId] = useState('');
+    const storedStationsData = JSON.parse(localStorage.getItem('stations'));
+    const [selectedOption, setSelectedOption] = useState(null);
+    const [_stationValue, setStationValue] = useRecoilState(station);
 
     useEffect(() => {
         const storedValue = localStorage.getItem('alarmValue');
@@ -20,6 +24,11 @@ const Settings = () => {
         if (stationIdValue !== null) {
             setStationId(stationIdValue)
         }
+        const opt = getOptions();
+        const option = opt.find((option: any) => option.value == stationIdValue);
+        if (option) {
+          setSelectedOption(option);
+        }
     }, []);
 
     const handleAlarmValue = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
@@ -27,16 +36,25 @@ const Settings = () => {
         setAlarmValue(inputValue);
     }, []);
 
-    const handleStationId = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        const inputValue = event.target.value;
-        setStationId(inputValue);
-    }, []);
+    const handleSelectedOption = ((option: any) => {
+        if (option === null) {
+            setStationId('');
+        } else {
+            setStationId(option.value);
+        }
+        setSelectedOption(option);
+    });
 
-    function closeModal() {
-        setModalSettings({ state: false });
+    function saveAndClose() {
         localStorage.setItem('alarmValue', alarmValue);
         localStorage.setItem('stationIdValue', stationId);
-        localStorage.setItem('stationNameValue', 'zilina');
+        setStationValue({id: stationId});
+        setModalSettings({ state: false });
+    }
+
+    function closeModal() {
+        console.log(stationId)
+        setModalSettings({ state: false });
     }
 
     const getStyles = () => {
@@ -60,8 +78,8 @@ const Settings = () => {
                 transform: 'translate(-50%, -50%)',
                 zIndex: 1000,
                 height: 'auto',
-                width: '300px',
-                overflow: 'hidden'
+                width: '400px',
+                overflow: 'visible'
             },
         };
         return customStyles;
@@ -69,7 +87,19 @@ const Settings = () => {
 
     const saveData = () => {
         setAppSettingsState({alarmValue: alarmValue, stationId: stationId});
-        closeModal();
+        saveAndClose();
+    }
+
+    const getOptions = () => {
+        if (storedStationsData) {
+            const stations = storedStationsData.map((item: any)=> ({ value: item.id, label: item.name }));
+
+            if (stations) {
+                return stations;
+            }
+        }
+        
+        return [];
     }
 
     return (
@@ -99,15 +129,15 @@ const Settings = () => {
                     <div className="form-group row align-items-baseline mt-3">
                         <label className="col-sm-3 col-form-label">Station</label>
                         <div className="col-sm-9">
-                            <input
-                                type="number"
-                                className={'form-control'}
-                                onChange={handleStationId}
-                                value={stationId}
+                            <Select
+                                value={selectedOption}
+                                onChange={handleSelectedOption}
+                                options={getOptions()}
+                                isClearable={true}
                             />
                         </div>
                     </div>
-                    <div className={'text-center'}>
+                    <div className={'d-flex justify-content-center gap-10'}>
                         <button className="btn btn-outline-dark mt-4" onClick={saveData}>
                             Save
                         </button>

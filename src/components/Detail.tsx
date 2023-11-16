@@ -36,6 +36,7 @@ function Detail() {
     const [searchStartDate, setSearchStartDate] = useState<Date | null>(null);
     const [searchEndDate, setSearchEndDate] = useState<Date | null>(null);
     const [filteredDetail, setFilteredDetail]: any = useState(null);
+    const storedStationsData = JSON.parse(localStorage.getItem('stations'));
 
     const handleSearchStartDateChange = (date: Date | null) => {
         setSearchStartDate(date);
@@ -240,6 +241,13 @@ function Detail() {
         return modifiedDataForChart;
     }
 
+    const getAlarmLine = () => {
+        if (localStorage.getItem('alarmValue')) {
+            return parseInt(localStorage.getItem('alarmValue'), 10);
+        }
+        return 400;
+    }
+
     const CustomModal = ({isOpen, closeModal}: { isOpen: boolean; closeModal: CloseModalFunction }) => {
         return (
             <Modal
@@ -252,7 +260,7 @@ function Detail() {
                     <span>×</span>
                 </button>
                 <div>
-                    <p className='ml-5'>{stationValue.name}</p>
+                    <p className='ml-5'>{getStationNameById(stationValue.id)}</p>
                 </div>
                 <div style={{ width: "100%", height: "100%" }}>
                     <ResponsiveContainer>
@@ -266,7 +274,7 @@ function Detail() {
                             }}
                         >
                             <ReferenceLine
-                                y={400}
+                                y={getAlarmLine()}
                                 stroke="red"
                                 label={{ value: 'Alarm', position: 'insideTopLeft', dy: -20 }}
                             />
@@ -322,6 +330,17 @@ function Detail() {
         )
     }
 
+    const getStationNameById = (id: string) => {
+        if (storedStationsData) {
+            const station = storedStationsData.find((station: any) => station.id === parseInt(id, 10));
+            if (station) {
+                return station.name;
+            }
+        }
+        
+        return "";
+    }
+
     const getMinDateTo = () => {
         return searchStartDate !== null ? searchStartDate : addDays(subMonths(new Date(), 1), 1);
     }
@@ -336,7 +355,7 @@ function Detail() {
                 <span>×</span>
             </button>
             <p>
-                {stationValue.name}
+                {getStationNameById(stationValue.id)}
             </p>
             <div className={'d-flex justify-content-between gap-10 mb-3'}>
                 <div>

@@ -3,12 +3,11 @@ import {atom, RecoilState} from 'recoil';
 export const station: RecoilState<any> = atom({
   key: 'station',
   default: {
-    id: null,
-    name: null,
+    id: null
   },
 });
 
-export const modal= atom({
+export const modal = atom({
   key: 'modal',
   default: {
     state: false,
@@ -34,6 +33,5 @@ export const appSettings: RecoilState<any> = atom({
   default: {
     alarmValue: null,
     stationId:  null,
-    stationName: null
   },
 });
