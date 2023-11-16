@@ -177,6 +177,11 @@ nav {
     box-shadow: none !important;
 }
 
+.form-control:hover {
+    border-color: #aaa !important;
+    box-shadow: none !important;
+}
+
 .bg-dark {
     background-color: #212121 !important;
 }
