@@ -5,6 +5,7 @@ import Table from "./components/Table.tsx";
 import {useRecoilState} from "recoil";
 import {modal, station, tableData} from "./atoms.ts";
 import Navbar from "./components/Navbar.tsx";
+import Settings from "./components/Settings.tsx";
 
 function App() {
     const [isOpenModal, setIsOpenModal] = useRecoilState(modal);
@@ -18,10 +19,10 @@ function App() {
 
     return (
         <div>
-            <Navbar></Navbar>
+            <Navbar/>
             <MapComponent/>
             <Detail/>
-            { isOpenModal &&
+            {isOpenModal &&
                 <Table/>
             }
             {data &&
@@ -33,6 +34,7 @@ function App() {
                     </button>
                 </div>
             }
+            <Settings/>
         </div>
 
     )

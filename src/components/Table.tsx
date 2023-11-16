@@ -178,19 +178,18 @@ function Table() {
                             />
                             {searchTerm && (
                                 <button
-                                    className="btn btn-outline-secondary"
+                                    className="react-datepicker__close-icon"
                                     type="button"
                                     onClick={handleClearSearch}
                                     style={{borderTopLeftRadius: 0, borderBottomLeftRadius: 0}}
                                 >
-                                    Clear
                                 </button>
                             )}
                         </div>
                     </div>
                     <div style={{maxHeight: "90%", overflowY: "auto"}} className={'m-3'}>
                         <table className="table table-striped table-bordered">
-                            <thead>
+                            <thead className={'sticky-top bg-dark text-white'}>
                             <tr>
                                 <th>Station</th>
                                 <th>Date</th>

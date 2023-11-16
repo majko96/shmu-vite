@@ -5,7 +5,7 @@ import axios, {AxiosResponse} from 'axios';
 import {useEffect, useRef, useState} from 'react';
 import {format} from 'date-fns';
 import {useRecoilState} from 'recoil';
-import {station, tableData} from '../atoms';
+import {appSettings, station, tableData} from '../atoms';
 import Danger from '../assets/danger.png';
 import Check from '../assets/check.png'
 
@@ -40,12 +40,13 @@ function MapComponent() {
     const [_tableData, setTableData] = useRecoilState(tableData);
     const [hasError, setHasError] = useState(false);
     const markerRefs = useRef<{ [key: number]: any }>({});
+    const [appSettingsState, _setAppSettingsState] = useRecoilState(appSettings);
+    const [forceRerenderKey, setForceRerenderKey] = useState(0);
 
-    const getStationDetail = (id: number, name: string) => {
+    const getStationDetail = (id: number) => {
         setStationValue((prevState: any) => ({
             ...prevState,
             id: id,
-            name: name,
         }));
     };
 
@@ -56,13 +57,17 @@ function MapComponent() {
                     'https://w5.shmu.sk/api/v1/meteo/getradiationgeojson');
                 setStations(response.data.features);
                 setTableData({values: response.data.features});
+                const stationsData = response.data.features.map((item) => {
+                    return { id: item.id, name: item.properties.prop_name };
+                  });
+                localStorage.setItem('stations', JSON.stringify(stationsData));
             } catch (error) {
-                console.log('something went wrong...')
+                console.log('Sorry, something went wrong...')
                 setHasError(true);
             }
         };
         fetchData().then();
-    }, [setTableData]);
+    }, [setTableData, forceRerenderKey]);
 
     useEffect(() => {
         const markerRef = markerRefs.current[stationValue.id];
@@ -73,12 +78,27 @@ function MapComponent() {
                 for (const key in markerRefs.current) {
                     if (Object.prototype.hasOwnProperty.call(markerRefs.current, key)) {
                       const markerReference = markerRefs.current[key];
-                      markerReference.closePopup();
+                      if (markerReference) {
+                          markerReference.closePopup();
+                      }
                     }
                   }
               }
         }
     })
+
+    useEffect(() => {
+        const savedStationId = localStorage.getItem('stationIdValue');
+        if (savedStationId) {
+            setStationValue({id: savedStationId});
+        }
+    }, []);
+
+    useEffect(() => {
+        if (appSettingsState.alarmValue !== undefined) {
+            setForceRerenderKey((prev) => prev + 1);
+        }
+    }, [appSettingsState]);
 
     const unixTimestampConverter = (timestamp: number) => {
         const date = new Date(timestamp * 1000);
@@ -99,10 +119,10 @@ function MapComponent() {
         )
     }
 
-    const handleMarkerClick = (id: number, name: string) => {
-        setStationValue({id: id, name: name});
+    const handleMarkerClick = (id: number) => {
+        setStationValue({id: id});
         if (stationValue.id) {
-            getStationDetail(id, name);
+            getStationDetail(id);
         } else {
             handleMarkerPopupClose;
         }
@@ -112,15 +132,66 @@ function MapComponent() {
         setStationValue({id: null, name: null});
     }
 
-    const renderStatusIcon = (alarm: boolean) => {
+    const renderStatusIcon = (alarm: boolean, value: number) => {
+        if (localStorage.getItem('alarmValue')) {
+            if (value > parseInt(localStorage.getItem('alarmValue'), 10)) {
+                return (
+                    <img
+                        src={Danger}
+                        alt={'danger'}
+                        width={'17px'}
+                        height={'17px'}
+                        className={'alarm-icon'}
+                    >
+                    </img>
+                );
+            }
+            return (
+                <img
+                    src={Check}
+                    alt={'check'}
+                    width={'20px'}
+                    height={'20px'}
+                    className={'alarm-icon'}
+                >
+                </img>
+            );
+        }
         if (alarm) {
             return (
-                <img src={Danger} alt={'danger'} width={'20px'} height={'20px'}></img>
-            )
+                <img
+                    src={Danger}
+                    alt={'danger'}
+                    width={'17px'}
+                    height={'17px'}
+                    className={'alarm-icon'}
+                >
+                </img>
+            );
         }
         return (
-            <img src={Check} alt={'check'} width={'20px'} height={'20px'}></img>
-        )
+            <img
+                src={Check}
+                alt={'check'}
+                width={'20px'}
+                height={'20px'}
+                className={'alarm-icon'}
+            >
+            </img>
+        );
+    }
+
+    const getMarkerColor = (alarm: boolean, value: number) => {
+        if (localStorage.getItem('alarmValue')) {
+            if (value > parseInt(localStorage.getItem('alarmValue'), 10)) {
+                return 'red';
+            }
+            return 'green';
+        }
+        if (alarm) {
+            return 'red';
+        }
+        return 'green';
     }
 
     return (
@@ -129,6 +200,7 @@ function MapComponent() {
                 center={position}
                 zoom={8}
                 scrollWheelZoom={true}
+                key={forceRerenderKey}
             >
                 <TileLayer
                     attribution="Google Maps"
@@ -138,13 +210,13 @@ function MapComponent() {
                     <CircleMarker
                         key={feature.id}
                         center={[feature.geometry.coordinates[1], feature.geometry.coordinates[0]]}
-                        fillColor={feature.properties.prop_alarm ? 'red' : 'green'}
+                        fillColor={getMarkerColor(feature.properties.prop_alarm, feature.properties.prop_value)}
                         color={'#000'}
                         fillOpacity={100}
                         weight={1}
                         eventHandlers={{
                             click: () => {
-                                handleMarkerClick(feature.id, feature.properties.prop_name);
+                                handleMarkerClick(feature.id);
                             },
                         }}
                         ref={(ref) => (markerRefs.current[feature.id] = ref)}
@@ -157,14 +229,16 @@ function MapComponent() {
                                 <div className={'mt-1'}>
                                     {unixTimestampConverter(feature.properties.prop_dt)}
                                 </div>
-                                <div className={'mt-1 mb-1'}>
-                                    {feature.properties.prop_value} nSv/h
+                                <div className={'mt-1 mb-1 d-flex align-items-center justify-content-between'}>
+                                    <span>
+                                        <b>{feature.properties.prop_value}</b>&nbsp;nSv/h
+                                    </span>
+                                    <span>
+                                        {renderStatusIcon(feature.properties.prop_alarm, feature.properties.prop_value)}
+                                    </span>
                                 </div>
                                 <hr className='mt-1 mb-1'/>
-                                <div className={'d-flex justify-content-between align-items-center'}>
-                                    <div>
-                                        {renderStatusIcon(feature.properties.prop_alarm)}
-                                    </div>
+                                <div className={'d-flex justify-content-end align-items-center'}>
                                     <small>[ID: {feature.id}]</small>
                                 </div>
                             </div>

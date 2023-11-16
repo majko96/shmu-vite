@@ -3,19 +3,21 @@ import {useRecoilState} from 'recoil';
 import {station} from '../atoms';
 import axios from 'axios';
 import React, {useEffect, useState} from 'react';
-import {format} from 'date-fns';
+import {addDays, format, subMonths} from 'date-fns';
 import Modal from 'react-modal';
 import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
     CartesianGrid,
+    Legend,
+    Line,
+    LineChart,
+    ReferenceLine,
+    ResponsiveContainer,
     Tooltip,
-    Legend, 
-    ResponsiveContainer, 
-    ReferenceLine
+    XAxis,
+    YAxis
 } from "recharts";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 Modal.setAppElement('#root');
 
@@ -31,6 +33,61 @@ function Detail() {
     const [modalIsOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [closeDetail, setCloseDetail] = useState(true);
+    const [searchStartDate, setSearchStartDate] = useState<Date | null>(null);
+    const [searchEndDate, setSearchEndDate] = useState<Date | null>(null);
+    const [filteredDetail, setFilteredDetail]: any = useState(null);
+    const storedStationsData = JSON.parse(localStorage.getItem('stations'));
+
+    const handleSearchStartDateChange = (date: Date | null) => {
+        setSearchStartDate(date);
+    };
+
+    const handleSearchEndDateChange = (date: Date | null) => {
+        setSearchEndDate(date);
+    };
+
+    const handleSearch = () => {
+        setFilteredDetail(null);
+        if (searchStartDate !== null && searchEndDate !== null) {
+            const endDate = new Date(searchEndDate);
+            endDate.setHours(23, 59, 59);
+
+            const filteredData = detail.filter((item: DetailItem) => {
+                const date = new Date(item.dt * 1000);
+                const timeZoneOffset = 1;
+                const itemDate = new Date(date.setHours(date.getHours() + timeZoneOffset));
+
+                return itemDate >= searchStartDate && itemDate <= endDate;
+            });
+            setFilteredDetail(filteredData.slice().sort((a: DetailItem, b: DetailItem) => b.dt - a.dt));
+        }
+        if (searchStartDate !== null) {
+            const endDate = new Date();
+            endDate.setHours(23, 59, 59);
+
+            const filteredData = detail.filter((item: DetailItem) => {
+                const date = new Date(item.dt * 1000);
+                const timeZoneOffset = 1;
+                const itemDate = new Date(date.setHours(date.getHours() + timeZoneOffset));
+
+                return itemDate >= searchStartDate && itemDate <= endDate;
+            });
+            setFilteredDetail(filteredData.slice().sort((a: DetailItem, b: DetailItem) => b.dt - a.dt));
+        }
+        if (searchEndDate !== null) {
+            const endDate = new Date(searchEndDate);
+            endDate.setHours(23, 59, 59);
+
+            const filteredData = detail.filter((item: DetailItem) => {
+                const date = new Date(item.dt * 1000);
+                const timeZoneOffset = 1;
+                const itemDate = new Date(date.setHours(date.getHours() + timeZoneOffset));
+
+                return itemDate >= searchStartDate && itemDate <= endDate;
+            });
+            setFilteredDetail(filteredData.slice().sort((a: DetailItem, b: DetailItem) => b.dt - a.dt));
+        }
+    };
 
     function openModal() {
         setIsOpen(true);
@@ -108,12 +165,19 @@ function Detail() {
                     setIsLoading(false);
                 } catch (error) {
                     setIsLoading(false);
-                    console.log('something went wrong...')
+                    console.log('Sorry, something went wrong...')
                 }
             };
             fetchData().then();
         }
     }, [stationValue]);
+
+    useEffect(() => {
+        handleSearch();
+        if (searchStartDate === null && searchEndDate === null) {
+            setFilteredDetail(null);
+        }
+    }, [searchStartDate, searchEndDate])
 
     const unixTimestampConverter = (timestamp: number) => {
         const date = new Date(timestamp * 1000);
@@ -163,6 +227,27 @@ function Detail() {
         return null;
     };
 
+    const getChartData = () => {
+        if (filteredDetail) {
+            const filteredSortedData : DetailItem[] =
+                filteredDetail.slice().sort((a: DetailItem, b: DetailItem) => a.dt - b.dt);
+            return filteredSortedData.map((item: DetailItem) => {
+                return {
+                    value: item.value,
+                    dt: unixTimestampConverter(item.dt),
+                };
+            });
+        }
+        return modifiedDataForChart;
+    }
+
+    const getAlarmLine = () => {
+        if (localStorage.getItem('alarmValue')) {
+            return parseInt(localStorage.getItem('alarmValue'), 10);
+        }
+        return 400;
+    }
+
     const CustomModal = ({isOpen, closeModal}: { isOpen: boolean; closeModal: CloseModalFunction }) => {
         return (
             <Modal
@@ -175,12 +260,12 @@ function Detail() {
                     <span>×</span>
                 </button>
                 <div>
-                    <h2 className='ml-5'>{stationValue.name}</h2>
+                    <p className='ml-5'>{getStationNameById(stationValue.id)}</p>
                 </div>
                 <div style={{ width: "100%", height: "100%" }}>
                     <ResponsiveContainer>
                         <LineChart
-                            data={modifiedDataForChart}
+                            data={getChartData()}
                             margin={{
                                 top: 5,
                                 right: 30,
@@ -188,7 +273,11 @@ function Detail() {
                                 bottom: 50
                             }}
                         >
-                            <ReferenceLine y={400} stroke="red" label={{ value: 'Alarm', position: 'insideTopLeft', dy: -20 }} />
+                            <ReferenceLine
+                                y={getAlarmLine()}
+                                stroke="red"
+                                label={{ value: 'Alarm', position: 'insideTopLeft', dy: -20 }}
+                            />
                             <CartesianGrid />
                             <XAxis
                                 dataKey="dt"
@@ -196,7 +285,10 @@ function Detail() {
                                 tickFormatter={stringToDateConverter}
                                 interval={window.innerWidth <= 500 ? 200 : 50} 
                             />
-                            <YAxis domain={[0, 550]} ticks={[40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520, 560]}/>
+                            <YAxis
+                                domain={[0, 550]}
+                                ticks={[40, 80, 120, 160, 200, 240, 280, 320, 360, 400, 440, 480, 520, 560]}
+                            />
                             <Tooltip content={<CustomTooltip />} />
                             <Legend />
                             <Line
@@ -217,29 +309,88 @@ function Detail() {
         setDetail(null);
     }
 
+    const renderTableBody = () => {
+        if (filteredDetail) {
+            return (
+                filteredDetail.map((item: DetailItem, index: number) => (
+                        <tr key={index}>
+                            <td>{unixTimestampConverter(item.dt)}</td>
+                            <td>{item.value} nSv/h</td>
+                        </tr>
+                    ))
+            )
+        }
+        return (
+            sortedData.map((item: DetailItem, index: number) => (
+                    <tr key={index}>
+                        <td>{unixTimestampConverter(item.dt)}</td>
+                        <td>{item.value} nSv/h</td>
+                    </tr>
+                ))
+        )
+    }
+
+    const getStationNameById = (id: string) => {
+        if (storedStationsData) {
+            const station = storedStationsData.find((station: any) => station.id === parseInt(id, 10));
+            if (station) {
+                return station.name;
+            }
+        }
+        
+        return "";
+    }
+
+    const getMinDateTo = () => {
+        return searchStartDate !== null ? searchStartDate : addDays(subMonths(new Date(), 1), 1);
+    }
+
+    const getMaxDate = () => {
+        return searchEndDate !== null ? searchEndDate : new Date();
+    };
+
     return (
         <div className={'card data-box'}>
             <button onClick={closeDetailWindow} className="btn close-button">
                 <span>×</span>
             </button>
             <p>
-                {stationValue.name}
+                {getStationNameById(stationValue.id)}
             </p>
+            <div className={'d-flex justify-content-between gap-10 mb-3'}>
+                <div>
+                    <DatePicker
+                        selected={searchStartDate}
+                        onChange={(date) => handleSearchStartDateChange(date)}
+                        isClearable
+                        placeholderText="From"
+                        className={'form-control'}
+                        minDate={addDays(subMonths(new Date(), 1), 1)}
+                        maxDate={getMaxDate()}
+                    />
+                </div>
+                <div>
+                    <DatePicker
+                        selected={searchEndDate}
+                        onChange={(date) => handleSearchEndDateChange(date)}
+                        isClearable
+                        placeholderText="To"
+                        className={'form-control'}
+                        minDate={getMinDateTo()}
+                        maxDate={new Date()}
+                    />
+                </div>
+            </div>
             <div className={'data-box-table'}>
                 <table className="table table-striped table-bordered">
-                    <thead>
+                    <thead className={'sticky-top bg-dark text-white'}>
                     <tr>
                         <th>Date</th>
                         <th>Value</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {sortedData.map((item: DetailItem, index: number) => (
-                        <tr key={index}>
-                            <td>{unixTimestampConverter(item.dt)}</td>
-                            <td>{item.value} nSv/h</td>
-                        </tr>
-                    ))}
+                        {renderTableBody()}
                     </tbody>
                 </table>
             </div>
