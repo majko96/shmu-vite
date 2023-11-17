@@ -16,6 +16,7 @@ const Settings = () => {
     const storedStationsData = JSON.parse(localStorage.getItem('stations'));
     const [selectedOption, setSelectedOption] = useState(null);
     const [_stationValue, setStationValue] = useRecoilState(station);
+    const [mock, setMock] = useState(null);
 
     useEffect(() => {
         const storedValue = localStorage.getItem('alarmValue');
@@ -26,6 +27,10 @@ const Settings = () => {
         if (stationIdValue !== null) {
             setStationId(stationIdValue)
         }
+        const mock = localStorage.getItem('mock');
+        if (mock !== null) {
+            setMock(JSON.parse(mock))
+        }
         const opt = getOptions();
         const option = opt.find((option: any) => option.value == stationIdValue);
         if (option) {
@@ -35,7 +40,9 @@ const Settings = () => {
 
     const handleAlarmValue = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
         const inputValue = event.target.value;
-        setAlarmValue(inputValue);
+        if (/^[0-9]*$/.test(inputValue)) {
+            setAlarmValue(inputValue);
+          }
     }, []);
 
     const handleSelectedOption = ((option: any) => {
@@ -47,9 +54,15 @@ const Settings = () => {
         setSelectedOption(option);
     });
 
+    const handleMock = () => {
+        const newValue = !mock;
+        setMock(newValue);
+      };
+
     function saveAndClose() {
         localStorage.setItem('alarmValue', alarmValue);
         localStorage.setItem('stationIdValue', stationId);
+        localStorage.setItem('mock', JSON.stringify(mock));
         setStationValue({id: stationId});
         setModalSettings({ state: false });
     }
@@ -80,11 +93,38 @@ const Settings = () => {
                 transform: 'translate(-50%, -50%)',
                 zIndex: 1000,
                 height: 'auto',
-                width: '400px',
+                width: '500px',
                 overflow: 'visible'
             },
         };
-        return customStyles;
+        const mobileStyles: Modal.Styles = {
+            overlay: {
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                zIndex: 1001,
+            },
+            content: {
+                position: 'absolute',
+                top: 'auto',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                zIndex: 1000,
+                height: 'auto',
+                width: '100%',
+                overflow: 'hidden',
+                bottom: 0,
+                padding: '30px 5px',
+            },
+        };
+        if (window.innerWidth <= 900) {
+            return mobileStyles;
+        } else {
+            return customStyles;
+        }
     }
 
     const saveData = () => {
@@ -142,8 +182,8 @@ const Settings = () => {
                     <img src={settingsImg} alt="settings" height={'20px'}/>&nbsp;<b>Settings</b>
                 </div>
                 <div style={{width: "100%", height: "100%"}}>
-                    <div className="form-group row align-items-baseline mt-3">
-                        <label className="col-sm-3 col-form-label">Alarm</label>
+                    <div className="form-group row align-items-center mt-3">
+                        <label className="col-sm-3 col-form-label">Alarm [nSv/h]</label>
                         <div className="col-sm-9">
                             <input
                                 type="number"
@@ -153,8 +193,8 @@ const Settings = () => {
                             />
                         </div>
                     </div>
-                    <div className="form-group row align-items-baseline mt-3">
-                        <label className="col-sm-3 col-form-label">Station</label>
+                    <div className="form-group row align-items-center mt-3">
+                        <label className="col-sm-3 col-form-label">Prefered station</label>
                         <div className="col-sm-9">
                             <Select
                                 value={selectedOption}
@@ -163,6 +203,19 @@ const Settings = () => {
                                 isClearable={true}
                                 styles={style}
                             />
+                        </div>
+                    </div>
+                    <div className="form-group row align-items-center mt-3">
+                        <label className="col-3 col-form-label">Mock data</label>
+                        <div className="col-9">
+                        <label className="checkbox-label">
+                            <input
+                                type="checkbox"
+                                checked={mock}
+                                onChange={handleMock}
+                            />
+                            <span className="checkmark"></span>
+                        </label>
                         </div>
                     </div>
                     <div className='d-flex justify-content-between align-items-center mt-5'>
