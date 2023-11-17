@@ -23,10 +23,10 @@ body {
 }
 
 .e-message {
-    left:45%;
+    text-align: center;
     position:absolute;
     top:50%;
-    width:300px;
+    width:100vw;
 }
 
 @keyframes spin {
@@ -239,3 +239,60 @@ nav {
     background-color: transparent;
     border: 0;
 }
+
+/* custom checkbox */
+
+.checkbox-label {
+    position: relative;
+    display: inline-block;
+    padding-left: 30px;
+    cursor: pointer;
+    top: -8px;
+  }
+  
+  .checkbox-label input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+  }
+  
+  .checkmark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 20px;
+    width: 20px;
+    background-color: #fff;
+    border: 1px solid #ced4da; 
+  }
+
+  .checkmark:hover {
+    border: 1px solid #aaa;
+  }
+  
+  .checkbox-label input:checked + .checkmark {
+    background-color: #212121;
+    border: 1px solid #212121; 
+  }
+  
+  .checkmark:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+  
+  .checkbox-label input:checked + .checkmark:after {
+    display: block;
+  }
+  
+  .checkbox-label .checkmark:after {
+    left: 7px;
+    top: 1px;
+    width: 6px;
+    height: 12px;
+    border: solid white;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  
+  /* custom checkbox */

@@ -18,6 +18,7 @@ import {
 } from "recharts";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { stationData } from '../utils/mockData';
 
 Modal.setAppElement('#root');
 
@@ -158,15 +159,30 @@ function Detail() {
             setCloseDetail(false);
             setIsLoading(true);
             const fetchData = async () => {
-                try {
-                    const response = await axios.get(
-                        `https://w5.shmu.sk/api/v1/meteo/getradiationdata?station=${stationValue.id}&history=720`);
-                    setDetail(response.data.data);
-                    setIsLoading(false);
-                } catch (error) {
-                    setIsLoading(false);
-                    console.log('Sorry, something went wrong...')
-                }
+                let mockValue = false;
+                const mock = localStorage.getItem('mock');
+                    if (mock !== null) {
+                        mockValue = JSON.parse(mock.trim());
+                    }
+                    if (mockValue) {
+                        if (stationValue.id !== '') {
+                            const mockData = stationData();
+                            setDetail(mockData.data);
+                        }
+                        setIsLoading(false);
+                    } else {
+                        try {
+                            const response = await axios.get(
+                                `https://w5.shmu.sk/api/v1/meteo/getradiationdata?station=${stationValue.id}&history=720`,
+                                {timeout: 10000}
+                                );
+                            setDetail(response.data.data);
+                            setIsLoading(false);
+                        } catch (error) {
+                            setIsLoading(false);
+                            console.log('Sorry, something went wrong...')
+                        }
+                    }
             };
             fetchData().then();
         }

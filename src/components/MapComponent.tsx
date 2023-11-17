@@ -5,9 +5,10 @@ import axios, {AxiosResponse} from 'axios';
 import {useEffect, useRef, useState} from 'react';
 import {format} from 'date-fns';
 import {useRecoilState} from 'recoil';
-import {appSettings, station, tableData} from '../atoms';
+import {appSettings, station, tableData, settingsModal} from '../atoms';
 import Danger from '../assets/danger.png';
 import Check from '../assets/check.png'
+import { data } from '../utils/mockData';
 
 interface RadiationData {
     type: string;
@@ -42,6 +43,7 @@ function MapComponent() {
     const markerRefs = useRef<{ [key: number]: any }>({});
     const [appSettingsState, _setAppSettingsState] = useRecoilState(appSettings);
     const [forceRerenderKey, setForceRerenderKey] = useState(0);
+    const [_modalSettings, setModalSettings] = useRecoilState(settingsModal);
 
     const getStationDetail = (id: number) => {
         setStationValue((prevState: any) => ({
@@ -52,19 +54,36 @@ function MapComponent() {
 
     useEffect(() => {
         const fetchData = async () => {
-            try {
-                const response: AxiosResponse<RadiationData> = await axios.get<RadiationData>(
-                    'https://w5.shmu.sk/api/v1/meteo/getradiationgeojson');
-                setStations(response.data.features);
-                setTableData({values: response.data.features});
-                const stationsData = response.data.features.map((item) => {
-                    return { id: item.id, name: item.properties.prop_name };
-                  });
-                localStorage.setItem('stations', JSON.stringify(stationsData));
-            } catch (error) {
-                console.log('Sorry, something went wrong...')
-                setHasError(true);
-            }
+            let mockValue = false;
+            const mock = localStorage.getItem('mock');
+                if (mock !== null) {
+                    mockValue = JSON.parse(mock);
+                }
+                if (mockValue) {
+                    const mockData = data();
+                    setStations(mockData.features);
+                    setTableData({values: mockData.features});
+                    const stationsData = mockData.features.map((item) => {
+                        return { id: item.id, name: item.properties.prop_name };
+                    });
+                    localStorage.setItem('stations', JSON.stringify(stationsData));
+                } else {
+                    try {
+                        const response: AxiosResponse<RadiationData> = await axios.get<RadiationData>(
+                            'https://w5.shmu.sk/api/v1/meteo/getradiationgeojson',
+                            {timeout: 10000}
+                            );
+                        setStations(response.data.features);
+                        setTableData({values: response.data.features});
+                        const stationsData = response.data.features.map((item) => {
+                            return { id: item.id, name: item.properties.prop_name };
+                          });
+                        localStorage.setItem('stations', JSON.stringify(stationsData));
+                    } catch (error) {
+                        console.log('Sorry, something went wrong...')
+                        setHasError(true);
+                    }
+                }
         };
         fetchData().then();
     }, [setTableData, forceRerenderKey]);
@@ -107,9 +126,24 @@ function MapComponent() {
         return format(adjustedDate, 'dd.MM.yyyy HH:mm');
     };
 
+    const openSettingsModal = () => {
+        setModalSettings({state: true})
+    }
+
     if (hasError) {
         return (
-            <div className={'e-message'}>Sorry, something went wrong...</div>
+            <div className={'e-message'}>
+                Sorry, something went wrong, you can use mock
+                data for example how application work. You can set it in settings.
+                <div className='mt-3'>
+                    <button 
+                        className='btn btn-dark'
+                        onClick={openSettingsModal}
+                    >
+                        Settings
+                    </button>
+                </div>
+             </div>
         )
     }
 
